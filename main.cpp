@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <vector>
 
 using namespace std;
 
@@ -361,18 +362,63 @@ Osoba * wczytajDaneZPliku(Osoba * PoczatekListyOsob)
     return PoczatekListyOsob;
 }
 
+bool sprawdzCzyIstniejeTakiLogin(vector<Uzytkownik> uzytkownicy,string login){
+    int dlugoscWektoraUzytkownikow=uzytkownicy.size();
+    for(int i=0;i<dlugoscWektoraUzytkownikow;i++){
+        if(uzytkownicy[i].login==login) return true;
+    }
+    return false;
+}
+
+vector<Uzytkownik> rejestracja(vector<Uzytkownik> uzytkownicy){
+    string login, haslo;
+    Uzytkownik uzytkownik;
+    system("cls");
+    cout << "Ksiega adresowa" << endl<<endl;
+    cout<<"Podaj login: ";
+    cin>>login;
+    while(sprawdzCzyIstniejeTakiLogin(uzytkownicy,login)){
+        cout<<endl<<"Podany login juz istnieje !"<<endl<<"Wprowadz login ponownie: ";
+        cin>>login;
+    }
+    uzytkownik.login=login;
+    cout<<"Podaj haslo: ";
+    cin>>haslo;
+    uzytkownik.haslo=haslo;
+    uzytkownicy.push_back(uzytkownik);
+    return uzytkownicy;
+}
 
 int main()
 {
     Osoba * PoczatekListyOsob=NULL;
-    int pozycjaMenu;
+    int pozycjaMenu=0;
+    int IdOgolne=0;
     bool czyZalogowano=false;
     PoczatekListyOsob=wczytajDaneZPliku(PoczatekListyOsob);
+    vector <Uzytkownik> uzytkownicy;
     while(true)
     {
+        system("cls");
         cout << "Ksiega adresowa" << endl<<endl;
         cout<<"1. Logowanie"<<endl<<"2. Rejestracja"<<endl<<"3. Zakoncz prace"<<endl<<endl<<"Twoj wybor: ";
-
+        cin>>pozycjaMenu;
+        switch(pozycjaMenu)
+            {
+            case 1:
+                {
+                    break;
+                }
+            case 2:
+                {
+                    uzytkownicy=rejestracja(uzytkownicy);
+                    break;
+                }
+            case 3:
+                {
+                    exit(0);
+                }
+            }
         while(czyZalogowano)
         {
             pozycjaMenu=0;
@@ -399,6 +445,7 @@ int main()
             }
             case 4:
             {
+                IdOgolne=0;
                 czyZalogowano=false;
                 break;
             }
