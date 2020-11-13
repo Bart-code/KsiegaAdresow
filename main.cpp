@@ -26,6 +26,14 @@ struct Osoba{
     Osoba * poprzedniaOsoba;
 };
 
+struct Uzytkownik{
+    int numerID;
+    string login;
+    string haslo;
+};
+
+
+
 fstream plik;
 
 Osoba * dodajOsobe(Osoba * PoczatekListyOsob)
@@ -358,36 +366,43 @@ int main()
 {
     Osoba * PoczatekListyOsob=NULL;
     int pozycjaMenu;
+    bool czyZalogowano=false;
     PoczatekListyOsob=wczytajDaneZPliku(PoczatekListyOsob);
-    while(1)
+    while(true)
     {
-        pozycjaMenu=0;
-        system("cls");
         cout << "Ksiega adresowa" << endl<<endl;
-        cout << "1. Dodaj nowa osobe"<<endl<<"2. Wyszukaj osobe"<<endl<<"3. Wyswietl liste osob"<<endl<<"4. Zakoncz prace"<<endl<<endl<<"Twoj wybor: ";
-        cin>>pozycjaMenu;
-        switch(pozycjaMenu)
+        cout<<"1. Logowanie"<<endl<<"2. Rejestracja"<<endl<<"3. Zakoncz prace"<<endl<<endl<<"Twoj wybor: ";
+
+        while(czyZalogowano)
         {
-        case 1:
-        {
-            PoczatekListyOsob=dodajOsobe(PoczatekListyOsob);
-            break;
-        }
-        case 2:
-        {
-            wyszukajOsobe(PoczatekListyOsob);
-            break;
-        }
-        case 3:
-        {
-            wyswietlListe(PoczatekListyOsob);
-            break;
-        }
-        case 4:
-        {
-            exit(0);
-            break;
-        }
+            pozycjaMenu=0;
+            system("cls");
+            cout << "Ksiega adresowa" << endl<<endl;
+            cout << "1. Dodaj nowa osobe"<<endl<<"2. Wyszukaj osobe"<<endl<<"3. Wyswietl liste osob"<<endl<<"4. Wyloguj"<<endl<<endl<<"Twoj wybor: ";
+            cin>>pozycjaMenu;
+            switch(pozycjaMenu)
+            {
+            case 1:
+            {
+                PoczatekListyOsob=dodajOsobe(PoczatekListyOsob);
+                break;
+            }
+            case 2:
+            {
+                wyszukajOsobe(PoczatekListyOsob);
+                break;
+            }
+            case 3:
+            {
+                wyswietlListe(PoczatekListyOsob);
+                break;
+            }
+            case 4:
+            {
+                czyZalogowano=false;
+                break;
+            }
+            }
         }
     }
 }
