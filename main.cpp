@@ -362,6 +362,34 @@ Osoba * wczytajDaneZPliku(Osoba * PoczatekListyOsob)
     return PoczatekListyOsob;
 }
 
+vector<Uzytkownik> wczytajUzytkownikowZPliku(void){
+    vector<Uzytkownik> uzytkownicy;
+    string linia,login, haslo,pomocniczy;
+    Uzytkownik uzytkownik;
+    int id;
+    plik.open("ListaUzytkownikow.txt",ios::in);
+    if(plik.good()==true){
+        while(getline(plik,linia)){
+            int i=0,j=0;
+            while(linia[i]!='|') i++;
+            pomocniczy=linia.substr(0,i);
+            id = atoi(pomocniczy.c_str());
+            j=++i;
+            while(linia[i]!='|') i++;
+            login=linia.substr(j,i-j);
+            j=++i;
+            while(linia[i]!='|') i++;
+            haslo=linia.substr(j,i-j);
+            uzytkownik.numerID=id;
+            uzytkownik.login=login;
+            uzytkownik.haslo=haslo;
+            uzytkownicy.push_back(uzytkownik);
+        }
+    }
+    else cout<<"Blad odczytu pliku";
+    plik.close();
+    return uzytkownicy;
+}
 bool sprawdzCzyIstniejeTakiLogin(vector<Uzytkownik> uzytkownicy,string login){
     int dlugoscWektoraUzytkownikow=uzytkownicy.size();
     for(int i=0;i<dlugoscWektoraUzytkownikow;i++){
@@ -397,12 +425,15 @@ int main()
     bool czyZalogowano=false;
     PoczatekListyOsob=wczytajDaneZPliku(PoczatekListyOsob);
     vector <Uzytkownik> uzytkownicy;
+    uzytkownicy=wczytajUzytkownikowZPliku();
     while(true)
     {
         system("cls");
         cout << "Ksiega adresowa" << endl<<endl;
         cout<<"1. Logowanie"<<endl<<"2. Rejestracja"<<endl<<"3. Zakoncz prace"<<endl<<endl<<"Twoj wybor: ";
         cin>>pozycjaMenu;
+        plik.open("ListaUzytkownikow.txt",ios::in);
+        if(plik.good()==true)
         switch(pozycjaMenu)
             {
             case 1:
