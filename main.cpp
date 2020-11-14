@@ -454,6 +454,28 @@ vector < Uzytkownik > rejestracja(vector < Uzytkownik > uzytkownicy)
     return uzytkownicy;
 }
 
+int zaloguj(vector < Uzytkownik > uzytkownicy)
+{
+    string login,haslo;
+    int id=0;
+    int rozmiar=uzytkownicy.size();
+    system("cls");
+    cout << "Ksiega adresowa" << endl<<endl;
+    cout<<"Podaj login: ";
+    cin>>login;
+    if(sprawdzCzyIstniejeTakiLogin(uzytkownicy , login)){
+        cout<<"Podaj haslo: ";
+        cin>>haslo;
+        for(int i=0;i<rozmiar;i++)
+        {
+            if(uzytkownicy[i].login==login) return uzytkownicy[i].numerID;
+        }
+
+    }
+    else cout<<"Nie ma uzytkownika o takim loginie !";
+    return id;
+}
+
 int main()
 {
     Osoba * PoczatekListyOsob=NULL;
@@ -474,6 +496,8 @@ int main()
             {
             case 1:
                 {
+                    IdOgolne=zaloguj(uzytkownicy);
+                    if(IdOgolne!=0) czyZalogowano=true;
                     break;
                 }
             case 2:
