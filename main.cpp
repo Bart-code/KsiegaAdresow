@@ -33,8 +33,6 @@ struct Uzytkownik{
     string haslo;
 };
 
-
-
 fstream plik;
 
 Osoba * dodajOsobe(Osoba * PoczatekListyOsob)
@@ -320,11 +318,10 @@ void wyszukajOsobe(Osoba * PoczatekListyOsob)
 
 Osoba * wczytajDaneZPliku(Osoba * PoczatekListyOsob)
 {
+    plik.open("ksiazkaAdresowa.txt",ios::in);
     if(plik.good()==true)
     {
-        plik.open("ksiazkaAdresowa.txt",ios::in);
         string linia,pomocniczy;
-
         while(getline(plik,linia))
         {
             Osoba * w_osoba=new Osoba;
@@ -352,17 +349,16 @@ Osoba * wczytajDaneZPliku(Osoba * PoczatekListyOsob)
             if (w_osoba->nastepnaOsoba!=NULL ) w_osoba->nastepnaOsoba->poprzedniaOsoba=w_osoba;
             PoczatekListyOsob=w_osoba;
         }
-        plik.close();
     }
     else
     {
-        cout << "Nie udalo sie otworzyc pliku i zapisac do niego danych." << endl;
+        cout << "Nie udalo sie otworzyc pliku i zapisac do niego danych.  ! " << endl;
         system("pause");
     }
     return PoczatekListyOsob;
 }
 
-vector<Uzytkownik> wczytajUzytkownikowZPliku(void){
+vector < Uzytkownik > wczytajUzytkownikowZPliku(void){
     vector<Uzytkownik> uzytkownicy;
     string linia,login, haslo,pomocniczy;
     Uzytkownik uzytkownik;
@@ -386,11 +382,17 @@ vector<Uzytkownik> wczytajUzytkownikowZPliku(void){
             uzytkownicy.push_back(uzytkownik);
         }
     }
-    else cout<<"Blad odczytu pliku";
+    else
+    {
+            cout<<"Blad odczytu pliku";
+            system("pause");
+    }
     plik.close();
     return uzytkownicy;
 }
-bool sprawdzCzyIstniejeTakiLogin(vector<Uzytkownik> uzytkownicy,string login){
+
+bool sprawdzCzyIstniejeTakiLogin(vector < Uzytkownik > uzytkownicy,string login)
+{
     int dlugoscWektoraUzytkownikow=uzytkownicy.size();
     for(int i=0;i<dlugoscWektoraUzytkownikow;i++){
         if(uzytkownicy[i].login==login) return true;
@@ -398,14 +400,47 @@ bool sprawdzCzyIstniejeTakiLogin(vector<Uzytkownik> uzytkownicy,string login){
     return false;
 }
 
-vector<Uzytkownik> rejestracja(vector<Uzytkownik> uzytkownicy){
+void wyswietlWektor(vector<Uzytkownik> wektorDoWyswietlenia)
+{
+    int rozmiar=wektorDoWyswietlenia.size();
+    for(int i=0;i<rozmiar;i++)
+    {
+        cout<<wektorDoWyswietlenia[i].numerID<<endl<<wektorDoWyswietlenia[i].login<<endl<<wektorDoWyswietlenia[i].haslo<<endl<<endl;
+    }
+}
+
+void zapiszUzytkownikowDoPliku(vector<Uzytkownik> uzytkownicy)
+{
+    string linia,idString;
+    //plik.close();
+    plik.open("ListaUzytkownikow.txt",ios::out|ios::trunc);
+    if(plik.good()==true)
+    {
+        int rozmiarWektoraUzytkownikow=uzytkownicy.size();
+        for(int i=0; i<rozmiarWektoraUzytkownikow; i++)
+        {
+            idString=to_string(uzytkownicy[i].numerID);
+            linia=idString+'|'+uzytkownicy[i].login+'|'+uzytkownicy[i].haslo+'|';
+            plik<<linia<<endl;
+        }
+    }
+    plik.close();
+}
+
+vector < Uzytkownik > rejestracja(vector < Uzytkownik > uzytkownicy)
+{
     string login, haslo;
+    int rozmiar=uzytkownicy.size();
+    int noweID;
+    if(!(uzytkownicy.empty())) noweID=uzytkownicy[rozmiar-1].numerID+1;
+    else noweID=1;
     Uzytkownik uzytkownik;
     system("cls");
     cout << "Ksiega adresowa" << endl<<endl;
     cout<<"Podaj login: ";
     cin>>login;
-    while(sprawdzCzyIstniejeTakiLogin(uzytkownicy,login)){
+    while(sprawdzCzyIstniejeTakiLogin(uzytkownicy,login))
+    {
         cout<<endl<<"Podany login juz istnieje !"<<endl<<"Wprowadz login ponownie: ";
         cin>>login;
     }
@@ -413,7 +448,9 @@ vector<Uzytkownik> rejestracja(vector<Uzytkownik> uzytkownicy){
     cout<<"Podaj haslo: ";
     cin>>haslo;
     uzytkownik.haslo=haslo;
+    uzytkownik.numerID=noweID;
     uzytkownicy.push_back(uzytkownik);
+    zapiszUzytkownikowDoPliku(uzytkownicy);
     return uzytkownicy;
 }
 
@@ -425,6 +462,7 @@ int main()
     bool czyZalogowano=false;
     PoczatekListyOsob=wczytajDaneZPliku(PoczatekListyOsob);
     vector <Uzytkownik> uzytkownicy;
+    plik.close();
     uzytkownicy=wczytajUzytkownikowZPliku();
     while(true)
     {
@@ -432,8 +470,6 @@ int main()
         cout << "Ksiega adresowa" << endl<<endl;
         cout<<"1. Logowanie"<<endl<<"2. Rejestracja"<<endl<<"3. Zakoncz prace"<<endl<<endl<<"Twoj wybor: ";
         cin>>pozycjaMenu;
-        plik.open("ListaUzytkownikow.txt",ios::in);
-        if(plik.good()==true)
         switch(pozycjaMenu)
             {
             case 1:
