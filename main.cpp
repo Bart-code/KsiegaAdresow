@@ -34,7 +34,7 @@ struct Uzytkownik{
     string haslo;
 };
 
-fstream plik;
+fstream plik, plikTymczasowy;
 
 Osoba * dodajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
@@ -99,31 +99,50 @@ void wyswietlListe(Osoba * PoczatekListyOsob)
 }
 
 
-void zapiszListeDoPliku(Osoba * PoczatekListyOsob)
+void zapiszListeDoPliku(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
     Osoba *wybranaOsoba = PoczatekListyOsob;
-    string linia,idString,idUzytkownikaString;
-    plik.open("ksiazkaAdresowa.txt",ios::out|ios::trunc);
-    while(1)
+    string linia,idString,idUzytkownikaString,pomocniczy;
+    int i,j, idUzytkownika;
+    plik.close();
+    plik.open("ksiazkaAdresowa.txt",ios::in);
+    plikTymczasowy.open("ksiazkaAdresowaTymczasowa.txt",ios::out|ios::trunc);
+    if(plik.good()){
+    while(getline(plik,linia))   //zapisanie adresatow innych uzytkownikow
     {
-        if(wybranaOsoba->nastepnaOsoba==NULL) break;
-        else wybranaOsoba=wybranaOsoba->nastepnaOsoba;
+        i=0; j=0;
+        while(linia[i]!='|') i++;
+        j=++i;
+        while(linia[i]!='|') i++;
+        pomocniczy=linia.substr(j,i-j);
+        idUzytkownika = atoi(pomocniczy.c_str());  //uzyskanie idUzytkownika aktualnej osoby
+        cout<<endl<<idUzytkownika<<endl;
+        system("pause");
+        if(idUzytkownika!=idObecnegoUzytkownika) plikTymczasowy<<linia<<endl;
     }
-
-    while(wybranaOsoba!=NULL)
+    }
+    else cout<<"Nie mozna otworzyc pliku do zapisu";
+    system("pause");
+    while(wybranaOsoba!=NULL)   //zapisanie adresatow obecnego uzytkownika
     {
-        linia="";
         idString=to_string(wybranaOsoba->id);
         idUzytkownikaString=to_string(wybranaOsoba->idUzytkownika);
         linia = idString + '|'+idUzytkownikaString + '|' + wybranaOsoba->imie + '|' + wybranaOsoba->nazwisko + '|' + wybranaOsoba->numerTelefonu + '|' +wybranaOsoba->email + '|' + wybranaOsoba->adres + '|';
-        plik<<linia<<endl;
-        wybranaOsoba=wybranaOsoba->poprzedniaOsoba;
+        plikTymczasowy<<linia<<endl;
+        wybranaOsoba=wybranaOsoba->nastepnaOsoba;
     }
     plik.close();
+    plikTymczasowy.close();
+    plik.open("ksiazkaAdresowa.txt",ios::out|ios::trunc);
+    plikTymczasowy.open("ksiazkaAdresowaTymczasowa.txt",ios::in);
+    while(getline(plikTymczasowy,linia)) plik<<linia<<endl;   //przepisanie plikow
+    plik.close();
+    plikTymczasowy.close();
+
 }
 
 
-void edytujDaneOsoby(Osoba * konkretnaOsoba,Osoba * PoczatekListyOsob)
+void edytujDaneOsoby(Osoba * konkretnaOsoba,Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
     system("cls");
     int pozycjaMenu=0;
@@ -183,10 +202,10 @@ void edytujDaneOsoby(Osoba * konkretnaOsoba,Osoba * PoczatekListyOsob)
     case 6:
         return;
     }
-    zapiszListeDoPliku(PoczatekListyOsob);
+    zapiszListeDoPliku(PoczatekListyOsob,idObecnegoUzytkownika);
 }
 
-bool usunOsobeZListy(Osoba * konkretnaOsoba,Osoba * PoczatekListyOsob)
+bool usunOsobeZListy(Osoba * konkretnaOsoba,Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
     char wybor;
     cout<<"Czy na pewno chcesz usunac osobe z listy ?"<<endl<<"TAK - t  /  NIE - n"<<endl;
@@ -211,11 +230,11 @@ bool usunOsobeZListy(Osoba * konkretnaOsoba,Osoba * PoczatekListyOsob)
             aktualnaOsoba->poprzedniaOsoba->nastepnaOsoba=aktualnaOsoba->nastepnaOsoba;
     aktualnaOsoba->nastepnaOsoba->poprzedniaOsoba=aktualnaOsoba->poprzedniaOsoba;
     }
-    zapiszListeDoPliku(PoczatekListyOsob);
+    zapiszListeDoPliku(PoczatekListyOsob,idObecnegoUzytkownika);
     return true;
 }
 
-void wyszukajOsobe(Osoba * PoczatekListyOsob)
+void wyszukajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
     string imie, nazwisko;
     int pozycjaMenu=0, id;
@@ -312,8 +331,8 @@ void wyszukajOsobe(Osoba * PoczatekListyOsob)
                 pozycjaMenu=0;
                 cin>>pozycjaMenu;
                 if(pozycjaMenu==1) return;
-                else if(pozycjaMenu==2) edytujDaneOsoby(pomocnicza,PoczatekListyOsob);
-                else if(pozycjaMenu==3) if(usunOsobeZListy(pomocnicza,PoczatekListyOsob)) return;
+                else if(pozycjaMenu==2) edytujDaneOsoby(pomocnicza,PoczatekListyOsob,idObecnegoUzytkownika);
+                else if(pozycjaMenu==3) if(usunOsobeZListy(pomocnicza,PoczatekListyOsob,idObecnegoUzytkownika)) return;
             }
         }
         pomocnicza=pomocnicza->nastepnaOsoba;
@@ -322,6 +341,7 @@ void wyszukajOsobe(Osoba * PoczatekListyOsob)
 
 Osoba * wczytajDaneZPliku(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
+    plik.close();
     plik.open("ksiazkaAdresowa.txt",ios::in);
     if(plik.good()==true)
     {
@@ -480,7 +500,12 @@ int zaloguj(vector < Uzytkownik > uzytkownicy)
         cin>>haslo;
         for(int i=0;i<rozmiar;i++)
         {
-            if(uzytkownicy[i].login==login) return uzytkownicy[i].numerID;
+            if(uzytkownicy[i].login==login)
+            {
+                cout<<"Udalo sie zalogowac !"<<endl<<"Twoj numer ID to:"<<uzytkownicy[i].numerID;
+                system("pause");
+                return uzytkownicy[i].numerID;
+            }
         }
 
     }
@@ -509,6 +534,7 @@ int main()
                 {
                     IdOgolne=zaloguj(uzytkownicy);
                     if(IdOgolne!=0) czyZalogowano=true;
+                    PoczatekListyOsob=wczytajDaneZPliku(PoczatekListyOsob,IdOgolne);
                     break;
                 }
             case 2:
@@ -523,7 +549,7 @@ int main()
             }
         while(czyZalogowano)
         {
-            PoczatekListyOsob=wczytajDaneZPliku(PoczatekListyOsob,IdOgolne);
+
             pozycjaMenu=0;
             system("cls");
             cout << "Ksiega adresowa" << endl<<endl;
@@ -538,7 +564,7 @@ int main()
             }
             case 2:
             {
-                wyszukajOsobe(PoczatekListyOsob);
+                wyszukajOsobe(PoczatekListyOsob,IdOgolne);
                 break;
             }
             case 3:
@@ -550,6 +576,7 @@ int main()
             {
                 IdOgolne=0;
                 czyZalogowano=false;
+                PoczatekListyOsob=NULL;
                 break;
             }
             }
