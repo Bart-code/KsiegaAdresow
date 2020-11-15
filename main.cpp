@@ -18,6 +18,7 @@ string to_string( T t )
 
 struct Osoba{
     int id;
+    int idUzytkownika;
     string imie;
     string nazwisko;
     string numerTelefonu;
@@ -35,7 +36,7 @@ struct Uzytkownik{
 
 fstream plik;
 
-Osoba * dodajOsobe(Osoba * PoczatekListyOsob)
+Osoba * dodajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
     plik.open("ksiazkaAdresowa.txt",ios::out|ios::app);
     Osoba * w_osoba=new Osoba;
@@ -44,6 +45,8 @@ Osoba * dodajOsobe(Osoba * PoczatekListyOsob)
     }
     else w_osoba->id=PoczatekListyOsob->id+1;
     plik<<w_osoba->id<<"|";
+    w_osoba->idUzytkownika=idObecnegoUzytkownika;
+    plik<<w_osoba->idUzytkownika<<"|";
     cout<<"Podaj imie: ";
     cin>>w_osoba->imie;
     plik<<w_osoba->imie<<"|";
@@ -99,7 +102,7 @@ void wyswietlListe(Osoba * PoczatekListyOsob)
 void zapiszListeDoPliku(Osoba * PoczatekListyOsob)
 {
     Osoba *wybranaOsoba = PoczatekListyOsob;
-    string linia,idString;
+    string linia,idString,idUzytkownikaString;
     plik.open("ksiazkaAdresowa.txt",ios::out|ios::trunc);
     while(1)
     {
@@ -111,7 +114,8 @@ void zapiszListeDoPliku(Osoba * PoczatekListyOsob)
     {
         linia="";
         idString=to_string(wybranaOsoba->id);
-        linia = idString + '|' + wybranaOsoba->imie + '|' + wybranaOsoba->nazwisko + '|' + wybranaOsoba->numerTelefonu + '|' +wybranaOsoba->email + '|' + wybranaOsoba->adres + '|';
+        idUzytkownikaString=to_string(wybranaOsoba->idUzytkownika);
+        linia = idString + '|'+idUzytkownikaString + '|' + wybranaOsoba->imie + '|' + wybranaOsoba->nazwisko + '|' + wybranaOsoba->numerTelefonu + '|' +wybranaOsoba->email + '|' + wybranaOsoba->adres + '|';
         plik<<linia<<endl;
         wybranaOsoba=wybranaOsoba->poprzedniaOsoba;
     }
@@ -316,20 +320,28 @@ void wyszukajOsobe(Osoba * PoczatekListyOsob)
     }
 }
 
-Osoba * wczytajDaneZPliku(Osoba * PoczatekListyOsob)
+Osoba * wczytajDaneZPliku(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
     plik.open("ksiazkaAdresowa.txt",ios::in);
     if(plik.good()==true)
     {
         string linia,pomocniczy;
+        int idAdresata, idUzytkownika;
         while(getline(plik,linia))
         {
             Osoba * w_osoba=new Osoba;
             int i=0,j=0;
             while(linia[i]!='|') i++;
             pomocniczy=linia.substr(0,i);
-            w_osoba->id = atoi(pomocniczy.c_str());
+            idAdresata= atoi(pomocniczy.c_str());
             j=++i;
+            while(linia[i]!='|') i++;
+            pomocniczy=linia.substr(j,i-j);
+            idUzytkownika = atoi(pomocniczy.c_str());
+            j=++i;
+            if(idUzytkownika!=idObecnegoUzytkownika) continue;
+            w_osoba->id =idAdresata;
+            w_osoba->idUzytkownika =idUzytkownika;
             while(linia[i]!='|') i++;
             w_osoba->imie=linia.substr(j,i-j);
             j=++i;
@@ -482,7 +494,6 @@ int main()
     int pozycjaMenu=0;
     int IdOgolne=0;
     bool czyZalogowano=false;
-    PoczatekListyOsob=wczytajDaneZPliku(PoczatekListyOsob);
     vector <Uzytkownik> uzytkownicy;
     plik.close();
     uzytkownicy=wczytajUzytkownikowZPliku();
@@ -512,6 +523,7 @@ int main()
             }
         while(czyZalogowano)
         {
+            PoczatekListyOsob=wczytajDaneZPliku(PoczatekListyOsob,IdOgolne);
             pozycjaMenu=0;
             system("cls");
             cout << "Ksiega adresowa" << endl<<endl;
@@ -521,7 +533,7 @@ int main()
             {
             case 1:
             {
-                PoczatekListyOsob=dodajOsobe(PoczatekListyOsob);
+                PoczatekListyOsob=dodajOsobe(PoczatekListyOsob,IdOgolne);
                 break;
             }
             case 2:

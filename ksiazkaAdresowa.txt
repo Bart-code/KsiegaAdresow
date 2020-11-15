@@ -1,7 +1,3 @@
-4|Jakub|Kowalski|997112911|gov@org.pl|Wloszczowska 12|
-5|Tateusz|PrzezPlecyPRzeloz|1234|dotkom|Harasiuki|
-6|Gracjan|Roztocki|5|gracjan@wp.plp.plp.pl|Tatry 52/3|
-7|Krzysztof|Walka|1234|sdfresdcvgrd|df333|
-8|Twoja|Stara|23432|123ds|123dcfxvfd|
-9|Pawel|Horoszenko|234432|3443dfvd|dceds23|
-10|Gabrysia|TEzWlodarczyk|781511929|Nowa|Nowa Sarzyna Cwiartki 3/4|
+1|1|Boguslaw|Linda|777333111|boguslaw@linda.pl|ul. Lotnikow 3a, Warszawa|
+2|1|Radoslaw|Pazura|666333111|radoslaw@pazura.pl|ul. 3 maja 3a, Lodz|
+3|2|Bartek|Warzocha|881297457|barte4332d|Turza 105|
