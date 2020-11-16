@@ -1,2 +1,3 @@
 1|Gabrielka|1234|
 2|Bartek|admin|
+3|Adam|dex|

@@ -38,6 +38,7 @@ fstream plik, plikTymczasowy;
 
 Osoba * dodajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
+    plik.close();
     plik.open("ksiazkaAdresowa.txt",ios::out|ios::app);
     Osoba * w_osoba=new Osoba;
     if(PoczatekListyOsob==NULL){
@@ -71,6 +72,7 @@ Osoba * dodajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
     cout<<endl<<"   Dodano osobe";
     Sleep(1200);
     plik.close();
+    system("pause");
     return PoczatekListyOsob;
 }
 
@@ -105,6 +107,7 @@ void zapiszListeDoPliku(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
     string linia,idString,idUzytkownikaString,pomocniczy;
     int i,j, idUzytkownika;
     plik.close();
+    plikTymczasowy.close();
     plik.open("ksiazkaAdresowa.txt",ios::in);
     plikTymczasowy.open("ksiazkaAdresowaTymczasowa.txt",ios::out|ios::trunc);
     if(plik.good()){
@@ -228,9 +231,10 @@ bool usunOsobeZListy(Osoba * konkretnaOsoba,Osoba * PoczatekListyOsob, int idObe
     else
     {
             aktualnaOsoba->poprzedniaOsoba->nastepnaOsoba=aktualnaOsoba->nastepnaOsoba;
-    aktualnaOsoba->nastepnaOsoba->poprzedniaOsoba=aktualnaOsoba->poprzedniaOsoba;
+            aktualnaOsoba->nastepnaOsoba->poprzedniaOsoba=aktualnaOsoba->poprzedniaOsoba;
     }
     zapiszListeDoPliku(PoczatekListyOsob,idObecnegoUzytkownika);
+
     return true;
 }
 
@@ -496,18 +500,26 @@ int zaloguj(vector < Uzytkownik > uzytkownicy)
     cout<<"Podaj login: ";
     cin>>login;
     if(sprawdzCzyIstniejeTakiLogin(uzytkownicy , login)){
-        cout<<"Podaj haslo: ";
-        cin>>haslo;
+
         for(int i=0;i<rozmiar;i++)
         {
             if(uzytkownicy[i].login==login)
             {
-                cout<<"Udalo sie zalogowac !"<<endl<<"Twoj numer ID to:"<<uzytkownicy[i].numerID;
-                system("pause");
+                for(int j=0;j<3;j++){
+                cout<<"Pozostalo prob: "<<3-j<<"  Podaj haslo: ";
+                cin>>haslo;
+                if(haslo==uzytkownicy[i].haslo){
+                cout<<"Udalo sie zalogowac !";//<<endl<<"Twoj numer ID to:"<<uzytkownicy[i].numerID;
+                Sleep(1000);
                 return uzytkownicy[i].numerID;
+                }
+                }
+                cout<<"Przekroczono liczbe prob !   Odczekaj 5 minut i ponownie wprowadz haslo";
+                Sleep(3000);
+                cout<<endl<<endl;
+                i--;
             }
         }
-
     }
     else cout<<"Nie ma uzytkownika o takim loginie !";
     return id;
