@@ -16,7 +16,8 @@ string to_string( T t )
     return ss.str();
 }
 
-struct Osoba{
+struct Osoba
+{
     int id;
     int idUzytkownika;
     string imie;
@@ -28,7 +29,8 @@ struct Osoba{
     Osoba * poprzedniaOsoba;
 };
 
-struct Uzytkownik{
+struct Uzytkownik
+{
     int numerID;
     string login;
     string haslo;
@@ -41,7 +43,8 @@ Osoba * dodajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
     plik.close();
     plik.open("ksiazkaAdresowa.txt",ios::out|ios::app);
     Osoba * w_osoba=new Osoba;
-    if(PoczatekListyOsob==NULL){
+    if(PoczatekListyOsob==NULL)
+    {
         w_osoba->id=1;
     }
     else w_osoba->id=PoczatekListyOsob->id+1;
@@ -72,7 +75,6 @@ Osoba * dodajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
     cout<<endl<<"   Dodano osobe";
     Sleep(1200);
     plik.close();
-    system("pause");
     return PoczatekListyOsob;
 }
 
@@ -110,22 +112,26 @@ void zapiszListeDoPliku(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
     plikTymczasowy.close();
     plik.open("ksiazkaAdresowa.txt",ios::in);
     plikTymczasowy.open("ksiazkaAdresowaTymczasowa.txt",ios::out|ios::trunc);
-    if(plik.good()){
-    while(getline(plik,linia))   //zapisanie adresatow innych uzytkownikow
+    if(plik.good())
     {
-        i=0; j=0;
-        while(linia[i]!='|') i++;
-        j=++i;
-        while(linia[i]!='|') i++;
-        pomocniczy=linia.substr(j,i-j);
-        idUzytkownika = atoi(pomocniczy.c_str());  //uzyskanie idUzytkownika aktualnej osoby
-        cout<<endl<<idUzytkownika<<endl;
+        while(getline(plik,linia))   //zapisanie adresatow innych uzytkownikow
+        {
+            i=0;
+            j=0;
+            while(linia[i]!='|') i++;
+            j=++i;
+            while(linia[i]!='|') i++;
+            pomocniczy=linia.substr(j,i-j);
+            idUzytkownika = atoi(pomocniczy.c_str());  //uzyskanie idUzytkownika aktualnej osoby
+            if(idUzytkownika!=idObecnegoUzytkownika) plikTymczasowy<<linia<<endl;
+        }
+    }
+    else
+    {
+        cout<<"Problem z plikiem  ksiazkaAdresowa.txt"<<endl;
         system("pause");
-        if(idUzytkownika!=idObecnegoUzytkownika) plikTymczasowy<<linia<<endl;
+        exit(0);
     }
-    }
-    else cout<<"Nie mozna otworzyc pliku do zapisu";
-    system("pause");
     while(wybranaOsoba!=NULL)   //zapisanie adresatow obecnego uzytkownika
     {
         idString=to_string(wybranaOsoba->id);
@@ -208,21 +214,22 @@ void edytujDaneOsoby(Osoba * konkretnaOsoba,Osoba * PoczatekListyOsob, int idObe
     zapiszListeDoPliku(PoczatekListyOsob,idObecnegoUzytkownika);
 }
 
-bool usunOsobeZListy(Osoba * konkretnaOsoba,Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
+Osoba * usunOsobeZListy(Osoba * konkretnaOsoba, Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
     char wybor;
     cout<<"Czy na pewno chcesz usunac osobe z listy ?"<<endl<<"TAK - t  /  NIE - n"<<endl;
     do cin>>wybor;
     while(wybor!='t'&&wybor!='n');
-    if(wybor=='n') return false;
+    if(wybor=='n') return PoczatekListyOsob;
     Osoba * aktualnaOsoba=PoczatekListyOsob;
-    while(aktualnaOsoba!=konkretnaOsoba){
+    while(aktualnaOsoba!=konkretnaOsoba)
+    {
         aktualnaOsoba=aktualnaOsoba->nastepnaOsoba;
     }
     if(aktualnaOsoba->poprzedniaOsoba==NULL)
     {
         PoczatekListyOsob=aktualnaOsoba->nastepnaOsoba;
-        aktualnaOsoba->nastepnaOsoba->poprzedniaOsoba=NULL;
+        if(aktualnaOsoba->nastepnaOsoba!=NULL) aktualnaOsoba->nastepnaOsoba->poprzedniaOsoba=NULL;
     }
     else if(aktualnaOsoba->nastepnaOsoba==NULL)
     {
@@ -230,15 +237,15 @@ bool usunOsobeZListy(Osoba * konkretnaOsoba,Osoba * PoczatekListyOsob, int idObe
     }
     else
     {
-            aktualnaOsoba->poprzedniaOsoba->nastepnaOsoba=aktualnaOsoba->nastepnaOsoba;
-            aktualnaOsoba->nastepnaOsoba->poprzedniaOsoba=aktualnaOsoba->poprzedniaOsoba;
+        aktualnaOsoba->poprzedniaOsoba->nastepnaOsoba=aktualnaOsoba->nastepnaOsoba;
+        aktualnaOsoba->nastepnaOsoba->poprzedniaOsoba=aktualnaOsoba->poprzedniaOsoba;
     }
     zapiszListeDoPliku(PoczatekListyOsob,idObecnegoUzytkownika);
 
-    return true;
+    return PoczatekListyOsob;
 }
 
-void wyszukajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
+Osoba * wyszukajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
     string imie, nazwisko;
     int pozycjaMenu=0, id;
@@ -281,7 +288,7 @@ void wyszukajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
         {
             cout<<"Nie ma osob o takim imieniu !";
             Sleep(1200);
-            return;
+            return PoczatekListyOsob;
         }
         break;
     }
@@ -306,12 +313,12 @@ void wyszukajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
         {
             cout<<"Nie ma osob o takim nazwisku !";
             Sleep(1200);
-            return;
+            return PoczatekListyOsob;
         }
         break;
     }
     case 3:
-        return;
+        return PoczatekListyOsob;
     }
     cout<<endl<<"Wprowadz ID szukanej osoby: ";
     cin>>id;
@@ -334,13 +341,18 @@ void wyszukajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
                 cout<<endl<<"1. Powrot do Menu glownego"<<endl<<"2. Edycja danych"<<endl<<"3. Usun osobe z listy"<<endl;
                 pozycjaMenu=0;
                 cin>>pozycjaMenu;
-                if(pozycjaMenu==1) return;
+                if(pozycjaMenu==1) return PoczatekListyOsob;
                 else if(pozycjaMenu==2) edytujDaneOsoby(pomocnicza,PoczatekListyOsob,idObecnegoUzytkownika);
-                else if(pozycjaMenu==3) if(usunOsobeZListy(pomocnicza,PoczatekListyOsob,idObecnegoUzytkownika)) return;
+                else if(pozycjaMenu==3)
+                {
+                    PoczatekListyOsob=usunOsobeZListy(pomocnicza,PoczatekListyOsob,idObecnegoUzytkownika);
+                    return PoczatekListyOsob;
+                }
             }
         }
         pomocnicza=pomocnicza->nastepnaOsoba;
     }
+    return PoczatekListyOsob;
 }
 
 Osoba * wczytajDaneZPliku(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
@@ -388,20 +400,24 @@ Osoba * wczytajDaneZPliku(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
     }
     else
     {
-        cout << "Nie udalo sie otworzyc pliku i zapisac do niego danych.  ! " << endl;
+        cout << "Nie udalo sie otworzyc pliku ksiazkaAdresowa.txt ! " << endl;
         system("pause");
+        exit(0);
     }
     return PoczatekListyOsob;
 }
 
-vector < Uzytkownik > wczytajUzytkownikowZPliku(void){
+vector < Uzytkownik > wczytajUzytkownikowZPliku(void)
+{
     vector<Uzytkownik> uzytkownicy;
     string linia,login, haslo,pomocniczy;
     Uzytkownik uzytkownik;
     int id;
     plik.open("ListaUzytkownikow.txt",ios::in);
-    if(plik.good()==true){
-        while(getline(plik,linia)){
+    if(plik.good()==true)
+    {
+        while(getline(plik,linia))
+        {
             int i=0,j=0;
             while(linia[i]!='|') i++;
             pomocniczy=linia.substr(0,i);
@@ -420,8 +436,9 @@ vector < Uzytkownik > wczytajUzytkownikowZPliku(void){
     }
     else
     {
-            cout<<"Blad odczytu pliku";
-            system("pause");
+        cout<<"Blad odczytu pliku ListaUzytkownikow.txt"<<endl;
+        system("pause");
+        exit(0);
     }
     plik.close();
     return uzytkownicy;
@@ -430,7 +447,8 @@ vector < Uzytkownik > wczytajUzytkownikowZPliku(void){
 bool sprawdzCzyIstniejeTakiLogin(vector < Uzytkownik > uzytkownicy,string login)
 {
     int dlugoscWektoraUzytkownikow=uzytkownicy.size();
-    for(int i=0;i<dlugoscWektoraUzytkownikow;i++){
+    for(int i=0; i<dlugoscWektoraUzytkownikow; i++)
+    {
         if(uzytkownicy[i].login==login) return true;
     }
     return false;
@@ -439,7 +457,7 @@ bool sprawdzCzyIstniejeTakiLogin(vector < Uzytkownik > uzytkownicy,string login)
 void wyswietlWektor(vector<Uzytkownik> wektorDoWyswietlenia)
 {
     int rozmiar=wektorDoWyswietlenia.size();
-    for(int i=0;i<rozmiar;i++)
+    for(int i=0; i<rozmiar; i++)
     {
         cout<<wektorDoWyswietlenia[i].numerID<<endl<<wektorDoWyswietlenia[i].login<<endl<<wektorDoWyswietlenia[i].haslo<<endl<<endl;
     }
@@ -448,7 +466,6 @@ void wyswietlWektor(vector<Uzytkownik> wektorDoWyswietlenia)
 void zapiszUzytkownikowDoPliku(vector<Uzytkownik> uzytkownicy)
 {
     string linia,idString;
-    //plik.close();
     plik.open("ListaUzytkownikow.txt",ios::out|ios::trunc);
     if(plik.good()==true)
     {
@@ -497,22 +514,25 @@ int zaloguj(vector < Uzytkownik > uzytkownicy)
     int rozmiar=uzytkownicy.size();
     system("cls");
     cout << "Ksiega adresowa" << endl<<endl;
-    cout<<"Podaj login: ";
+    cout << "Podaj login: ";
     cin>>login;
-    if(sprawdzCzyIstniejeTakiLogin(uzytkownicy , login)){
+    if(sprawdzCzyIstniejeTakiLogin(uzytkownicy , login))
+    {
 
-        for(int i=0;i<rozmiar;i++)
+        for(int i=0; i<rozmiar; i++)
         {
             if(uzytkownicy[i].login==login)
             {
-                for(int j=0;j<3;j++){
-                cout<<"Pozostalo prob: "<<3-j<<"  Podaj haslo: ";
-                cin>>haslo;
-                if(haslo==uzytkownicy[i].haslo){
-                cout<<"Udalo sie zalogowac !";//<<endl<<"Twoj numer ID to:"<<uzytkownicy[i].numerID;
-                Sleep(1000);
-                return uzytkownicy[i].numerID;
-                }
+                for(int j=0; j<3; j++)
+                {
+                    cout<<"Pozostalo prob: "<<3-j<<"  Podaj haslo: ";
+                    cin>>haslo;
+                    if(haslo==uzytkownicy[i].haslo)
+                    {
+                        cout<<endl<<"Udalo sie zalogowac !"<<endl;
+                        Sleep(1000);
+                        return uzytkownicy[i].numerID;
+                    }
                 }
                 cout<<"Przekroczono liczbe prob !   Odczekaj 5 minut i ponownie wprowadz haslo";
                 Sleep(3000);
@@ -521,7 +541,11 @@ int zaloguj(vector < Uzytkownik > uzytkownicy)
             }
         }
     }
-    else cout<<"Nie ma uzytkownika o takim loginie !";
+    else
+    {
+        cout<<"Nie ma uzytkownika o takim loginie !";
+        system("pause");
+    }
     return id;
 }
 
@@ -531,7 +555,7 @@ int main()
     int pozycjaMenu=0;
     int IdOgolne=0;
     bool czyZalogowano=false;
-    vector <Uzytkownik> uzytkownicy;
+    vector < Uzytkownik > uzytkownicy;
     plik.close();
     uzytkownicy=wczytajUzytkownikowZPliku();
     while(true)
@@ -541,24 +565,24 @@ int main()
         cout<<"1. Logowanie"<<endl<<"2. Rejestracja"<<endl<<"3. Zakoncz prace"<<endl<<endl<<"Twoj wybor: ";
         cin>>pozycjaMenu;
         switch(pozycjaMenu)
-            {
-            case 1:
-                {
-                    IdOgolne=zaloguj(uzytkownicy);
-                    if(IdOgolne!=0) czyZalogowano=true;
-                    PoczatekListyOsob=wczytajDaneZPliku(PoczatekListyOsob,IdOgolne);
-                    break;
-                }
-            case 2:
-                {
-                    uzytkownicy=rejestracja(uzytkownicy);
-                    break;
-                }
-            case 3:
-                {
-                    exit(0);
-                }
-            }
+        {
+        case 1:
+        {
+            IdOgolne=zaloguj(uzytkownicy);
+            if(IdOgolne!=0) czyZalogowano=true;
+            PoczatekListyOsob=wczytajDaneZPliku(PoczatekListyOsob,IdOgolne);
+            break;
+        }
+        case 2:
+        {
+            uzytkownicy=rejestracja(uzytkownicy);
+            break;
+        }
+        case 3:
+        {
+            exit(0);
+        }
+        }
         while(czyZalogowano)
         {
 
@@ -576,7 +600,7 @@ int main()
             }
             case 2:
             {
-                wyszukajOsobe(PoczatekListyOsob,IdOgolne);
+                PoczatekListyOsob=wyszukajOsobe(PoczatekListyOsob,IdOgolne);
                 break;
             }
             case 3:

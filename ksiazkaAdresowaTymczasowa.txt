@@ -1,4 +1,2 @@
 1|1|Boguslaw|Linda|777333111|boguslaw@linda.pl|ul. Lotnikow 3a, Warszawa|
-2|1|Radoslaw|Pazura|666333111|radoslaw@pazura.pl|ul. 3 maja 3a, Lodz|
-5|1|Jakub|Gierszal|444222777|jakub@gierszal.pl|ul. Zwycieska 4, Warszawa|
 4|2|Adam|Woronowicz|333111888|adam@woronowicz.pl|ul. Zakonna 5, Bialystok|
