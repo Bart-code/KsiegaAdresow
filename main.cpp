@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <cstdio>
 
 using namespace std;
 
@@ -40,15 +41,25 @@ fstream plik, plikTymczasowy;
 
 Osoba * dodajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
+    string linia,pomocniczy;
+    int noweID=1,i;
+    plik.close();
+    plik.open("ksiazkaAdresowa.txt",ios::in);
+
+    while(getline(plik,linia))
+    {
+        i=0;
+        while(linia[i]!='|') i++;
+        pomocniczy=linia.substr(0,i);
+        noweID = atoi(pomocniczy.c_str())+1;
+    }
     plik.close();
     plik.open("ksiazkaAdresowa.txt",ios::out|ios::app);
+
     Osoba * w_osoba=new Osoba;
-    if(PoczatekListyOsob==NULL)
-    {
-        w_osoba->id=1;
-    }
-    else w_osoba->id=PoczatekListyOsob->id+1;
-    plik<<w_osoba->id<<"|";
+
+    w_osoba->id=noweID;
+    plik<<noweID<<"|";
     w_osoba->idUzytkownika=idObecnegoUzytkownika;
     plik<<w_osoba->idUzytkownika<<"|";
     cout<<"Podaj imie: ";
@@ -106,6 +117,11 @@ void wyswietlListe(Osoba * PoczatekListyOsob)
 void zapiszListeDoPliku(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
     Osoba *wybranaOsoba = PoczatekListyOsob;
+    if(wybranaOsoba!=NULL)
+    {
+        while(wybranaOsoba->nastepnaOsoba!=NULL) wybranaOsoba=wybranaOsoba->nastepnaOsoba;
+
+    }
     string linia,idString,idUzytkownikaString,pomocniczy;
     int i,j, idUzytkownika;
     plik.close();
@@ -114,7 +130,7 @@ void zapiszListeDoPliku(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
     plikTymczasowy.open("ksiazkaAdresowaTymczasowa.txt",ios::out|ios::trunc);
     if(plik.good())
     {
-        while(getline(plik,linia))   //zapisanie adresatow innych uzytkownikow
+        while(getline(plik,linia))
         {
             i=0;
             j=0;
@@ -123,7 +139,18 @@ void zapiszListeDoPliku(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
             while(linia[i]!='|') i++;
             pomocniczy=linia.substr(j,i-j);
             idUzytkownika = atoi(pomocniczy.c_str());  //uzyskanie idUzytkownika aktualnej osoby
-            if(idUzytkownika!=idObecnegoUzytkownika) plikTymczasowy<<linia<<endl;
+            if(idUzytkownika!=idObecnegoUzytkownika)
+            {
+                plikTymczasowy<<linia<<endl;
+            }
+            else if(wybranaOsoba!=NULL)
+            {
+                idString=to_string(wybranaOsoba->id);
+                idUzytkownikaString=to_string(wybranaOsoba->idUzytkownika);
+                linia = idString + '|'+idUzytkownikaString + '|' + wybranaOsoba->imie + '|' + wybranaOsoba->nazwisko + '|' + wybranaOsoba->numerTelefonu + '|' +wybranaOsoba->email + '|' + wybranaOsoba->adres + '|';
+                plikTymczasowy<<linia<<endl;
+                wybranaOsoba=wybranaOsoba->poprzedniaOsoba;
+            }
         }
     }
     else
@@ -132,22 +159,10 @@ void zapiszListeDoPliku(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
         system("pause");
         exit(0);
     }
-    while(wybranaOsoba!=NULL)   //zapisanie adresatow obecnego uzytkownika
-    {
-        idString=to_string(wybranaOsoba->id);
-        idUzytkownikaString=to_string(wybranaOsoba->idUzytkownika);
-        linia = idString + '|'+idUzytkownikaString + '|' + wybranaOsoba->imie + '|' + wybranaOsoba->nazwisko + '|' + wybranaOsoba->numerTelefonu + '|' +wybranaOsoba->email + '|' + wybranaOsoba->adres + '|';
-        plikTymczasowy<<linia<<endl;
-        wybranaOsoba=wybranaOsoba->nastepnaOsoba;
-    }
     plik.close();
     plikTymczasowy.close();
-    plik.open("ksiazkaAdresowa.txt",ios::out|ios::trunc);
-    plikTymczasowy.open("ksiazkaAdresowaTymczasowa.txt",ios::in);
-    while(getline(plikTymczasowy,linia)) plik<<linia<<endl;   //przepisanie plikow
-    plik.close();
-    plikTymczasowy.close();
-
+    remove("ksiazkaAdresowa.txt");
+    rename("ksiazkaAdresowaTymczasowa.txt","ksiazkaAdresowa.txt");
 }
 
 
@@ -250,6 +265,12 @@ Osoba * wyszukajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
     string imie, nazwisko;
     int pozycjaMenu=0, id;
     Osoba * pomocnicza=PoczatekListyOsob;
+    if(pomocnicza==NULL)
+    {
+        cout<<"Ksiega Twoich znajomych jest pusta !"<<endl<<endl;
+        Sleep(1000);
+        return pomocnicza;
+    }
     bool pustaListaOsob=false;
 
     do
@@ -357,52 +378,49 @@ Osoba * wyszukajOsobe(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 
 Osoba * wczytajDaneZPliku(Osoba * PoczatekListyOsob, int idObecnegoUzytkownika)
 {
-    plik.close();
     plik.open("ksiazkaAdresowa.txt",ios::in);
-    if(plik.good()==true)
+    if(plik.good()==false)
     {
-        string linia,pomocniczy;
-        int idAdresata, idUzytkownika;
-        while(getline(plik,linia))
-        {
-            Osoba * w_osoba=new Osoba;
-            int i=0,j=0;
-            while(linia[i]!='|') i++;
-            pomocniczy=linia.substr(0,i);
-            idAdresata= atoi(pomocniczy.c_str());
-            j=++i;
-            while(linia[i]!='|') i++;
-            pomocniczy=linia.substr(j,i-j);
-            idUzytkownika = atoi(pomocniczy.c_str());
-            j=++i;
-            if(idUzytkownika!=idObecnegoUzytkownika) continue;
-            w_osoba->id =idAdresata;
-            w_osoba->idUzytkownika =idUzytkownika;
-            while(linia[i]!='|') i++;
-            w_osoba->imie=linia.substr(j,i-j);
-            j=++i;
-            while(linia[i]!='|') i++;
-            w_osoba->nazwisko=linia.substr(j,i-j);
-            j=++i;
-            while(linia[i]!='|') i++;
-            w_osoba->numerTelefonu=linia.substr(j,i-j);
-            j=++i;
-            while(linia[i]!='|') i++;
-            w_osoba->email=linia.substr(j,i-j);
-            j=++i;
-            while(linia[i]!='|') i++;
-            w_osoba->adres=linia.substr(j,i-j);
-            w_osoba->nastepnaOsoba=PoczatekListyOsob;
-            w_osoba->poprzedniaOsoba=NULL;
-            if (w_osoba->nastepnaOsoba!=NULL ) w_osoba->nastepnaOsoba->poprzedniaOsoba=w_osoba;
-            PoczatekListyOsob=w_osoba;
-        }
+        plik.close();
+        plik.open("ksiazkaAdresowa.txt",ios::out);
+        plik.close();
+        plik.open("ksiazkaAdresowa.txt",ios::in);
     }
-    else
+    string linia,pomocniczy;
+    int idAdresata, idUzytkownika;
+    while(getline(plik,linia))
     {
-        cout << "Nie udalo sie otworzyc pliku ksiazkaAdresowa.txt ! " << endl;
-        system("pause");
-        exit(0);
+        Osoba * w_osoba=new Osoba;
+        int i=0,j=0;
+        while(linia[i]!='|') i++;
+        pomocniczy=linia.substr(0,i);
+        idAdresata= atoi(pomocniczy.c_str());
+        j=++i;
+        while(linia[i]!='|') i++;
+        pomocniczy=linia.substr(j,i-j);
+        idUzytkownika = atoi(pomocniczy.c_str());
+        j=++i;
+        if(idUzytkownika!=idObecnegoUzytkownika) continue;
+        w_osoba->id =idAdresata;
+        w_osoba->idUzytkownika =idUzytkownika;
+        while(linia[i]!='|') i++;
+        w_osoba->imie=linia.substr(j,i-j);
+        j=++i;
+        while(linia[i]!='|') i++;
+        w_osoba->nazwisko=linia.substr(j,i-j);
+        j=++i;
+        while(linia[i]!='|') i++;
+        w_osoba->numerTelefonu=linia.substr(j,i-j);
+        j=++i;
+        while(linia[i]!='|') i++;
+        w_osoba->email=linia.substr(j,i-j);
+        j=++i;
+        while(linia[i]!='|') i++;
+        w_osoba->adres=linia.substr(j,i-j);
+        w_osoba->nastepnaOsoba=PoczatekListyOsob;
+        w_osoba->poprzedniaOsoba=NULL;
+        if (w_osoba->nastepnaOsoba!=NULL ) w_osoba->nastepnaOsoba->poprzedniaOsoba=w_osoba;
+        PoczatekListyOsob=w_osoba;
     }
     return PoczatekListyOsob;
 }
@@ -414,31 +432,29 @@ vector < Uzytkownik > wczytajUzytkownikowZPliku(void)
     Uzytkownik uzytkownik;
     int id;
     plik.open("ListaUzytkownikow.txt",ios::in);
-    if(plik.good()==true)
+    if(plik.good()==false)
     {
-        while(getline(plik,linia))
-        {
-            int i=0,j=0;
-            while(linia[i]!='|') i++;
-            pomocniczy=linia.substr(0,i);
-            id = atoi(pomocniczy.c_str());
-            j=++i;
-            while(linia[i]!='|') i++;
-            login=linia.substr(j,i-j);
-            j=++i;
-            while(linia[i]!='|') i++;
-            haslo=linia.substr(j,i-j);
-            uzytkownik.numerID=id;
-            uzytkownik.login=login;
-            uzytkownik.haslo=haslo;
-            uzytkownicy.push_back(uzytkownik);
-        }
+        plik.open("ListaUzytkownikow.txt",ios::out);
+        plik.close();
+        plik.open("ListaUzytkownikow.txt",ios::in);
     }
-    else
+
+    while(getline(plik,linia))
     {
-        cout<<"Blad odczytu pliku ListaUzytkownikow.txt"<<endl;
-        system("pause");
-        exit(0);
+        int i=0,j=0;
+        while(linia[i]!='|') i++;
+        pomocniczy=linia.substr(0,i);
+        id = atoi(pomocniczy.c_str());
+        j=++i;
+        while(linia[i]!='|') i++;
+        login=linia.substr(j,i-j);
+        j=++i;
+        while(linia[i]!='|') i++;
+        haslo=linia.substr(j,i-j);
+        uzytkownik.numerID=id;
+        uzytkownik.login=login;
+        uzytkownik.haslo=haslo;
+        uzytkownicy.push_back(uzytkownik);
     }
     plik.close();
     return uzytkownicy;
@@ -466,6 +482,7 @@ void wyswietlWektor(vector<Uzytkownik> wektorDoWyswietlenia)
 void zapiszUzytkownikowDoPliku(vector<Uzytkownik> uzytkownicy)
 {
     string linia,idString;
+    plik.close();
     plik.open("ListaUzytkownikow.txt",ios::out|ios::trunc);
     if(plik.good()==true)
     {
@@ -476,6 +493,11 @@ void zapiszUzytkownikowDoPliku(vector<Uzytkownik> uzytkownicy)
             linia=idString+'|'+uzytkownicy[i].login+'|'+uzytkownicy[i].haslo+'|';
             plik<<linia<<endl;
         }
+    }
+    else
+    {
+        cout<<"Blad otwarcia pliku";
+        system("pause");
     }
     plik.close();
 }
@@ -504,6 +526,8 @@ vector < Uzytkownik > rejestracja(vector < Uzytkownik > uzytkownicy)
     uzytkownik.numerID=noweID;
     uzytkownicy.push_back(uzytkownik);
     zapiszUzytkownikowDoPliku(uzytkownicy);
+    cout<<endl<<"Udalo sie zarejestrowac ! ";
+    Sleep(1000);
     return uzytkownicy;
 }
 
