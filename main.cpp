@@ -6,6 +6,7 @@
 #include <sstream>
 #include <vector>
 #include <cstdio>
+#include "Uzytkownik.h"
 
 using namespace std;
 
@@ -30,12 +31,7 @@ struct Osoba
     Osoba * poprzedniaOsoba;
 };
 
-struct Uzytkownik
-{
-    int numerID;
-    string login;
-    string haslo;
-};
+static int NastepnyNumerId=1;
 
 fstream plik, plikTymczasowy;
 
@@ -451,9 +447,9 @@ vector < Uzytkownik > wczytajUzytkownikowZPliku(void)
         j=++i;
         while(linia[i]!='|') i++;
         haslo=linia.substr(j,i-j);
-        uzytkownik.numerID=id;
-        uzytkownik.login=login;
-        uzytkownik.haslo=haslo;
+        uzytkownik.ustawIdUzytkownika(id);
+        uzytkownik.ustawNazweUzytkownika(login);
+        uzytkownik.ustawHasloUzytkownika(haslo);
         uzytkownicy.push_back(uzytkownik);
     }
     plik.close();
@@ -465,20 +461,20 @@ bool sprawdzCzyIstniejeTakiLogin(vector < Uzytkownik > uzytkownicy,string login)
     int dlugoscWektoraUzytkownikow=uzytkownicy.size();
     for(int i=0; i<dlugoscWektoraUzytkownikow; i++)
     {
-        if(uzytkownicy[i].login==login) return true;
+        if(uzytkownicy[i].pobierzNazweUzytkownika()==login) return true;
     }
     return false;
 }
 
-void wyswietlWektor(vector<Uzytkownik> wektorDoWyswietlenia)
+/*void wyswietlWektor(vector<Uzytkownik> wektorDoWyswietlenia)
 {
     int rozmiar=wektorDoWyswietlenia.size();
     for(int i=0; i<rozmiar; i++)
     {
-        cout<<wektorDoWyswietlenia[i].numerID<<endl<<wektorDoWyswietlenia[i].login<<endl<<wektorDoWyswietlenia[i].haslo<<endl<<endl;
+        cout<<wektorDoWyswietlenia[i].pobierzIdUzytkownika()<<endl<<wektorDoWyswietlenia[i].pobierzNazweUzytkownika()<<endl<<wektorDoWyswietlenia[i].pobierzHasloUzytkownika()<<endl<<endl;
     }
 }
-
+*/
 void zapiszUzytkownikowDoPliku(vector<Uzytkownik> uzytkownicy)
 {
     string linia,idString;
@@ -489,8 +485,8 @@ void zapiszUzytkownikowDoPliku(vector<Uzytkownik> uzytkownicy)
         int rozmiarWektoraUzytkownikow=uzytkownicy.size();
         for(int i=0; i<rozmiarWektoraUzytkownikow; i++)
         {
-            idString=to_string(uzytkownicy[i].numerID);
-            linia=idString+'|'+uzytkownicy[i].login+'|'+uzytkownicy[i].haslo+'|';
+            idString=to_string(uzytkownicy[i].pobierzIdUzytkownika());
+            linia=idString+'|'+uzytkownicy[i].pobierzNazweUzytkownika()+'|'+uzytkownicy[i].pobierzHasloUzytkownika()+'|';
             plik<<linia<<endl;
         }
     }
@@ -507,7 +503,7 @@ vector < Uzytkownik > rejestracja(vector < Uzytkownik > uzytkownicy)
     string login, haslo;
     int rozmiar=uzytkownicy.size();
     int noweID;
-    if(!(uzytkownicy.empty())) noweID=uzytkownicy[rozmiar-1].numerID+1;
+    if(!(uzytkownicy.empty())) noweID=uzytkownicy[rozmiar-1].pobierzIdUzytkownika()+1;
     else noweID=1;
     Uzytkownik uzytkownik;
     system("cls");
@@ -519,11 +515,11 @@ vector < Uzytkownik > rejestracja(vector < Uzytkownik > uzytkownicy)
         cout<<endl<<"Podany login juz istnieje !"<<endl<<"Wprowadz login ponownie: ";
         cin>>login;
     }
-    uzytkownik.login=login;
+    uzytkownik.ustawNazweUzytkownika(login);
     cout<<"Podaj haslo: ";
     cin>>haslo;
-    uzytkownik.haslo=haslo;
-    uzytkownik.numerID=noweID;
+    uzytkownik.ustawHasloUzytkownika(haslo);
+    uzytkownik.ustawIdUzytkownika(noweID);
     uzytkownicy.push_back(uzytkownik);
     zapiszUzytkownikowDoPliku(uzytkownicy);
     cout<<endl<<"Udalo sie zarejestrowac ! ";
@@ -545,17 +541,17 @@ int zaloguj(vector < Uzytkownik > uzytkownicy)
 
         for(int i=0; i<rozmiar; i++)
         {
-            if(uzytkownicy[i].login==login)
+            if(uzytkownicy[i].pobierzNazweUzytkownika()==login)
             {
                 for(int j=0; j<3; j++)
                 {
                     cout<<"Pozostalo prob: "<<3-j<<"  Podaj haslo: ";
                     cin>>haslo;
-                    if(haslo==uzytkownicy[i].haslo)
+                    if(haslo==uzytkownicy[i].pobierzHasloUzytkownika())
                     {
                         cout<<endl<<"Udalo sie zalogowac !"<<endl;
                         Sleep(1000);
-                        return uzytkownicy[i].numerID;
+                        return uzytkownicy[i].pobierzIdUzytkownika();
                     }
                 }
                 cout<<"Przekroczono liczbe prob !   Odczekaj 5 minut i ponownie wprowadz haslo";

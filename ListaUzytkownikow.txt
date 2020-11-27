@@ -1,1 +1,2 @@
 1|Bartek|admin|
+2|Bartun|1234|
